@@ -1,4 +1,4 @@
-FROM foundery.azurecr.io/foundery/corda:3.2
+FROM foundery.azurecr.io/foundery/corda:3.3
 
 ARG NODE_PATH
 
@@ -15,4 +15,3 @@ EXPOSE 10004
 WORKDIR /opt/corda
 ENV HOME=/opt/corda
 USER corda
-
