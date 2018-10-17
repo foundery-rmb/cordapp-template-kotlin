@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+  notary:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NODE_PATH: build/nodes/Notary
+
+    image: "foundery.azurecr.io/foundery/corda-test-notary:latest"
+    ports:
+      - "10002-10004"
+
+    networks:
+      - corda-test-net
+
+  party-a:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NODE_PATH: build/nodes/PartyA
+
+    image: "foundery.azurecr.io/foundery/corda-test-party-a:latest"
+    ports:
+      - "10002-10004"
+
+    networks:
+      - corda-test-net
+
+  party-b:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NODE_PATH: build/nodes/PartyB
+
+    image: "foundery.azurecr.io/foundery/corda-test-party-b:latest"
+    ports:
+      - "10002-10004"
+
+    networks:
+      - corda-test-net
+
+networks:
+  corda-test-net:
+
