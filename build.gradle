@@ -1,6 +1,6 @@
 buildscript {
     ext.corda_release_group = 'net.corda'
-    ext.corda_release_version = '3.2-corda'
+    ext.corda_release_version = '3.3-corda'
     ext.corda_gradle_plugins_version = '3.1.0'
     ext.kotlin_version = '1.1.60'
     ext.junit_version = '4.12'
@@ -103,7 +103,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
     directory "./build/nodes"
     node {
         name "O=Notary,L=London,C=GB"
-        notary = [validating : false]
+        notary = [validating: false]
         p2pPort 10002
         rpcSettings {
             address("localhost:10003")
@@ -128,7 +128,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
                 "$project.group:cordapp:$project.version",
                 "$corda_release_group:corda-finance:$corda_release_version"
         ]
-        rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
+        rpcUsers = [[user: "user1", "password": "test", "permissions": ["ALL"]]]
     }
     node {
         name "O=PartyB,L=New York,C=US"
@@ -143,54 +143,44 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
                 "$project.group:cordapp:$project.version",
                 "$corda_release_group:corda-finance:$corda_release_version"
         ]
-        rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
+        rpcUsers = [[user: "user1", "password": "test", "permissions": ["ALL"]]]
     }
 }
 
-// A task specifically for generating Docker-friendly configuration
-task deployNodesDocker(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
-    directory "./build/nodes"
+def rpcUsersList = [
+        ['username'   : "user",
+         'password'   : "password",
+         'permissions': ["ALL"]]
+]
+
+task prepareDockerNodes(type: net.corda.plugins.Dockerform, dependsOn: ['jar']) {
     node {
-        name "O=Notary,L=London,C=GB"
-        notary = [validating : false]
-        p2pPort 10002
-        rpcSettings {
-            address("notary:10003")
-            adminAddress("notary:10004")
-        }
+        name "O=NotaryService,L=South Africa,C=ZA"
+        notary = [validating: true]
         cordapps = [
                 "$project.group:cordapp-contracts-states:$project.version",
                 "$project.group:cordapp:$project.version",
                 "$corda_release_group:corda-finance:$corda_release_version"
         ]
+        rpcUsers = rpcUsersList
     }
     node {
-        name "O=PartyA,L=London,C=GB"
-        p2pPort 10002
-        rpcSettings {
-            address("party-a:10003")
-            adminAddress("party-a:10004")
-        }
+        name "O=PartyA,L=South Africa,C=ZA"
         cordapps = [
                 "$project.group:cordapp-contracts-states:$project.version",
                 "$project.group:cordapp:$project.version",
                 "$corda_release_group:corda-finance:$corda_release_version"
         ]
-        rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
+        rpcUsers = rpcUsersList
     }
     node {
-        name "O=PartyB,L=New York,C=US"
-        p2pPort 10002
-        rpcSettings {
-            address("party-b:10003")
-            adminAddress("party-b:10004")
-        }
+        name "O=PartyB,L=South Africa,C=ZA"
         cordapps = [
                 "$project.group:cordapp-contracts-states:$project.version",
                 "$project.group:cordapp:$project.version",
                 "$corda_release_group:corda-finance:$corda_release_version"
         ]
-        rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
+        rpcUsers = rpcUsersList
     }
 }
 
