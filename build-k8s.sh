@@ -1,17 +1,17 @@
 #!/bin/sh
 set -e
 
-RUN_CORDA='#!/bin/sh
+RUN_CORDA="#!/bin/bash
 
 # If variable not present use default values
-CORDA_HOME=${CORDA_HOME:="/opt/corda"}
-JAVA_OPTIONS=${JAVA_OPTIONS:="-Xmx512m"}
+CORDA_HOME=\${CORDA_HOME:-'/opt/corda'}
+JAVA_OPTIONS=\${JAVA_OPTIONS:-'-Xmx512m'}
 
-export CORDA_HOME JAVA_OPTIONS
+cd \${CORDA_HOME}
+java \${JAVA_OPTIONS} -jar \${CORDA_HOME}/corda.jar 2>&1"
 
-cd ${CORDA_HOME}
-java ${JAVA_OPTIONS} -jar ${CORDA_HOME}/corda.jar 2>&1
-'
+DOCKER_COMPOSE="version: '3'
+services:"
 
 echo "Building Docker nodes..."
 ./gradlew clean prepareDockerNodes
@@ -27,10 +27,12 @@ do
     node_name=`echo $f | cut -d "/" -f 3`
     image_name=`echo $node_name | tr '[:upper:]' '[:lower:]'`
     echo "${RUN_CORDA}" > "build/nodes/${node_name}/run-corda.sh"
-    cat "build/nodes/${node_name}/run-corda.sh"
     docker build --build-arg BUILDTIME_CORDA_VERSION="3.3" \
         -f $f.new \
         -t "foundery.azurecr.io/foundery/corda-test-${image_name}:latest" \
         "build/nodes/${node_name}/"
+    DOCKER_COMPOSE="${DOCKER_COMPOSE}\n  ${image_name}:\n    build: ${node_name}/Dockerfile.new\n    ports: [10003]\n    command: ['/bin/bash', '/run-corda.sh']"
 done
+
+echo "${DOCKER_COMPOSE}" > build/nodes/docker-compose.yml
 
